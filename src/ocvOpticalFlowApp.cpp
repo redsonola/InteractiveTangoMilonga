@@ -24,6 +24,7 @@ class ocvOpticalFlowApp : public AppBasic {
 	void chooseFeatures( cv::Mat currentFrame );
 	void trackFeatures( cv::Mat currentFrame );
 	void loadMovieFile( const fs::path &path ); 
+    void findPeople( cv::Mat curImg ); 
 	
 	gl::Texture                     mTexture;
 	Capture                         mCapture;
@@ -32,6 +33,11 @@ class ocvOpticalFlowApp : public AppBasic {
     std::vector<uint8_t>			mFeatureStatuses;
 	bool                            mDrawPoints;
     
+	//for detecting people
+    cv::HOGDescriptor hog;
+	cv::Mat mono_img;
+    std::vector<cv::Rect> mFoundPeople;
+
     
 	gl::Texture					mFrameTexture, mInfoTexture;
 	qtime::MovieSurface         mMovie;
@@ -48,8 +54,20 @@ void ocvOpticalFlowApp::setup()
     
 	fs::path moviePath = getOpenFilePath();
 	if( ! moviePath.empty() )
-		loadMovieFile( moviePath );    
+		loadMovieFile( moviePath );  
+
+    hog.setSVMDetector( cv::HOGDescriptor::getDefaultPeopleDetector() );
+
 }
+
+
+void ocvOpticalFlowApp::findPeople(cv::Mat curImg)
+{
+    cv::Mat monoImg; 
+    cv::cvtColor(curImg, monoImg, CV_BGR2GRAY);
+    hog.detectMultiScale(monoImg, mFoundPeople);
+}
+
 
 void ocvOpticalFlowApp::keyDown( KeyEvent event )
 {
@@ -117,16 +135,15 @@ void ocvOpticalFlowApp::update()
 	Surface surface = mMovie.getSurface();
     cv::Mat currentFrame( toOcv( Channel( surface ) ) );
     mTexture = gl::Texture( surface );
-    if( mPrevFrame.data ) 
-    {
-			if( mFeatures.empty() || getElapsedFrames() % 30 == 0 ) // pick new features once every 30 frames, or the first frame
-				chooseFeatures( mPrevFrame );
-			trackFeatures( currentFrame );
-    }
-    mPrevFrame = currentFrame;
-	
+//    if( mPrevFrame.data ) 
+//    {
+//			if( mFeatures.empty() || getElapsedFrames() % 30 == 0 ) // pick new features once every 30 frames, or the first frame
+//				chooseFeatures( mPrevFrame );
+//			trackFeatures( currentFrame );
+//    }
+//    mPrevFrame = currentFrame;
     
-    
+    findPeople(currentFrame);
     
 //	if( mCapture.checkNewFrame() ) {
 //		Surface surface( mCapture.getSurface() );
@@ -157,26 +174,34 @@ void ocvOpticalFlowApp::draw()
 	glDisable( GL_TEXTURE_2D );
 	glColor4f( 1, 1, 0, 0.5f );
 	
-	if( mDrawPoints ) {
-		// draw all the old points
-		for( std::vector<cv::Point2f>::const_iterator featureIt = mPrevFeatures.begin(); featureIt != mPrevFeatures.end(); ++featureIt )
-			gl::drawStrokedCircle( fromOcv( *featureIt ), 4 );
-
-		// draw all the new points
-		for( std::vector<cv::Point2f>::const_iterator featureIt = mFeatures.begin(); featureIt != mFeatures.end(); ++featureIt )
-			gl::drawSolidCircle( fromOcv( *featureIt ), 4 );
-	}
+//	if( mDrawPoints ) {
+//		// draw all the old points
+//		for( std::vector<cv::Point2f>::const_iterator featureIt = mPrevFeatures.begin(); featureIt != mPrevFeatures.end(); ++featureIt )
+//			gl::drawStrokedCircle( fromOcv( *featureIt ), 4 );
+//
+//		// draw all the new points
+//		for( std::vector<cv::Point2f>::const_iterator featureIt = mFeatures.begin(); featureIt != mFeatures.end(); ++featureIt )
+//			gl::drawSolidCircle( fromOcv( *featureIt ), 4 );
+//	}
 	
 	// draw the lines connecting them
-	glColor4f( 0, 1, 0, 0.5f );
-	glBegin( GL_LINES );
-	for( size_t idx = 0; idx < mFeatures.size(); ++idx ) {
-		if( mFeatureStatuses[idx] ) {
-			gl::vertex( fromOcv( mFeatures[idx] ) );
-			gl::vertex( fromOcv( mPrevFeatures[idx] ) );
-		}
-	}
-	glEnd();
+//	glColor4f( 0, 1, 0, 0.5f );
+//	glBegin( GL_LINES );
+//	for( size_t idx = 0; idx < mFeatures.size(); ++idx ) {
+//		if( mFeatureStatuses[idx] ) {
+//			gl::vertex( fromOcv( mFeatures[idx] ) );
+//			gl::vertex( fromOcv( mPrevFeatures[idx] ) );
+//		}
+//	}
+//	glEnd();
+    
+    for(int i=0; i<mFoundPeople.size(); i++ )
+    {
+        cv::Rect r = mFoundPeople[i];
+        Rectf faceRect( fromOcv( r ) );
+        gl::drawStrokedRect( faceRect );        
+    }
+    
 }
 
 

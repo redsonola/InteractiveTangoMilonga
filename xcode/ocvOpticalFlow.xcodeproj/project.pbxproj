@@ -251,11 +251,14 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
+				OTHER_LDFLAGS = "";
+				"OTHER_LDFLAGS[arch=*]" = (
 					"\"$(CINDER_PATH)/lib/libcinder_d.a\"",
 					../../../lib/macosx/libopencv_imgproc.a,
 					../../../lib/macosx/libopencv_core.a,
 					../../../lib/macosx/libopencv_video.a,
+					../../../lib/macosx/libopencv_objdetect.a,
+					../../../lib/macosx/libopencv_gpu.a,
 				);
 				PRODUCT_NAME = ocvOpticalFlow;
 				WRAPPER_EXTENSION = app;
@@ -276,11 +279,14 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"\"$(CINDER_PATH)/lib/libcinder.a\"",
+				OTHER_LDFLAGS = "";
+				"OTHER_LDFLAGS[arch=*]" = (
+					"\"$(CINDER_PATH)/lib/libcinder_d.a\"",
 					../../../lib/macosx/libopencv_imgproc.a,
 					../../../lib/macosx/libopencv_core.a,
 					../../../lib/macosx/libopencv_video.a,
+					../../../lib/macosx/libopencv_objdetect.a,
+					../../../lib/macosx/libopencv_gpu.a,
 				);
 				PRODUCT_NAME = ocvOpticalFlow;
 				STRIP_INSTALLED_PRODUCT = YES;
